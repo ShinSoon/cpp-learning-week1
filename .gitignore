@@ -1,0 +1,25 @@
+# C++ build outputs
+*.o
+*.out
+*.exe  # Windows
+*.dll  # Windows
+*.so   # Linux
+
+# Build directories
+build/
+bin/
+Debug/
+Release/
+
+# Editor/IDE files
+.vscode/
+.idea/
+
+# macOS system files
+.DS_Store
+
+# Other common files/directories to ignore
+*.swp  # Vim swap files
+*~     # Backup files
+/tmp*
+/log*
