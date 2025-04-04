@@ -28,7 +28,7 @@ public:
         return height;
     }
 
-    double getWidth() const{
+    double getWidth() const{ // This getWidth method is to get the width 
 
         return width;
     }
