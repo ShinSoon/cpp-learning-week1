@@ -23,12 +23,12 @@ public:
         height = h;
     }
 
-    double getHeight() const{
+    double getHeight() const{// This is a method that return double which is the heigh 
 
         return height;
     }
 
-    double getWidth() const{
+    double getWidth() const{// This is another method that return double which is the width 
 
         return width;
     }
