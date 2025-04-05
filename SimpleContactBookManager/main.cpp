@@ -1,53 +1,48 @@
 #include <iostream>
 #include <string>
-#include <vector>   // Although using fixed array, vector might be useful for temp storage or future expansion knowledge
-#include <limits>   // Required for numeric_limits (used in input clearing)
-#include <iomanip>  // Required for std::setw (optional, for better display formatting)
+#include <vector>
+#include <limits>
+#include <iomanip> // Required for std::setw
 
-// [ ] Define a struct or class named Contact
+// Struct definition (same as before)
 struct Contact {
     std::string name;
     std::string phoneNumber;
 };
 
-// Function Prototypes (good practice to declare functions before main if defined after)
+// --- Function Prototypes ---
 void displayContacts(const Contact contacts[], int size);
 void addContact(Contact contacts[], int& size, int maxSize);
+// [ ] Add a new function prototype for findContactByName
+void findContactByName(const Contact contacts[], int size); // New function prototype
 
 int main() {
-    // [ ] In main(), declare a fixed-size array and tracking variables
-    const int MAX_CONTACTS = 10; // Set the maximum size
-    Contact contacts[MAX_CONTACTS]; // The array to hold contacts
-    int currentSize = 0; // Track how many contacts are actually stored
-
+    const int MAX_CONTACTS = 10;
+    Contact contacts[MAX_CONTACTS];
+    int currentSize = 0;
     int choice;
 
-    // [ ] In main(), create a simple loop-based menu:
     while (true) {
         std::cout << "\n--- Contact Book Menu ---" << std::endl;
         std::cout << "1. Add Contact" << std::endl;
         std::cout << "2. Display Contacts" << std::endl;
-        std::cout << "3. Exit" << std::endl;
+        // [ ] Add a new option to your main menu loop
+        std::cout << "3. Find Contact by Name" << std::endl; // New option
+        std::cout << "4. Exit" << std::endl;                 // Renumbered Exit
         std::cout << "-------------------------" << std::endl;
         std::cout << "Enter your choice: ";
 
-        // Get user choice and perform basic validation
         std::cin >> choice;
 
-        // Check if the input operation failed (e.g., user entered text)
         if (std::cin.fail()) {
-            std::cout << "\n*** Invalid input. Please enter a number (1-3). ***" << std::endl;
-            std::cin.clear(); // Clear the error flags
-            // Discard the invalid input from the buffer
+            std::cout << "\n*** Invalid input. Please enter a number (1-4). ***" << std::endl; // Updated range
+            std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            continue; // Go to the next iteration of the loop
+            continue;
         }
 
-        // Consume the leftover newline character after reading the integer
-        // This prevents issues with std::getline in addContact
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Consume newline
 
-        // [ ] Use a switch statement or if/else if to call functions
         switch (choice) {
             case 1:
                 addContact(contacts, currentSize, MAX_CONTACTS);
@@ -55,29 +50,25 @@ int main() {
             case 2:
                 displayContacts(contacts, currentSize);
                 break;
-            case 3:
+            // [ ] Add a case to call the search function
+            case 3: // New case for search
+                findContactByName(contacts, currentSize);
+                break;
+            case 4: // Renumbered case for Exit
                 std::cout << "\nExiting Contact Book. Goodbye!" << std::endl;
-                return 0; // Exit the program successfully
+                return 0;
             default:
-                std::cout << "\n*** Invalid choice. Please enter 1, 2, or 3. ***" << std::endl;
+                std::cout << "\n*** Invalid choice. Please enter 1, 2, 3, or 4. ***" << std::endl; // Updated range
                 break;
         }
     }
 
-    // This part is technically unreachable because the loop exits via 'return 0;'
-    // but it's good practice for main to return 0 on successful completion.
-    return 0;
+    return 0; // Should be unreachable
 }
 
-// [ ] Implement a function void displayContacts(...)
-/**
- * @brief Displays the details of all contacts currently stored in the array.
- *
- * @param contacts The array of Contact objects (passed as const as it's not modified).
- * @param size The current number of contacts stored in the array.
- */
+// displayContacts function (same as before)
 void displayContacts(const Contact contacts[], int size) {
-    std::cout << "\n--- Stored Contacts (" << size << "/" << 10 /* Hardcoded maxSize for display, could pass if needed */ << ") ---" << std::endl;
+    std::cout << "\n--- Stored Contacts (" << size << "/" << 10 << ") ---" << std::endl;
     if (size == 0) {
         std::cout << "No contacts to display." << std::endl;
     } else {
@@ -91,44 +82,63 @@ void displayContacts(const Contact contacts[], int size) {
     std::cout << "-----------------------------------" << std::endl;
 }
 
-// [ ] Implement a function void addContact(...)
-/**
- * @brief Adds a new contact to the array if space is available.
- *        Prompts the user for contact details.
- *
- * @param contacts The array of Contact objects.
- * @param size A reference to the current number of contacts (will be incremented).
- * @param maxSize The maximum capacity of the contacts array.
- */
+// addContact function (same as before)
 void addContact(Contact contacts[], int& size, int maxSize) {
     std::cout << "\n--- Add New Contact ---" << std::endl;
-
-    // Check if the array is full
     if (size >= maxSize) {
         std::cout << "*** Error: Contact book is full. Cannot add more contacts. ***" << std::endl;
-        return; // Exit the function
+        return;
     }
-
-    // Create a temporary Contact object to store new data
     Contact newContact;
-
-    // Prompt user for name
     std::cout << "Enter contact name: ";
-    // Use std::getline to allow names with spaces.
-    // std::ws consumes leading whitespace potentially left by previous std::cin >> choice
-    // Note: We already used cin.ignore() in main, so std::ws might be redundant here,
-    // but it's safer to include it or be aware of the potential issue.
     std::getline(std::cin >> std::ws, newContact.name);
-
-    // Prompt user for phone number
     std::cout << "Enter phone number: ";
     std::getline(std::cin >> std::ws, newContact.phoneNumber);
-
-    // Add the new contact to the array at the next available index
     contacts[size] = newContact;
-
-    // Increment the size counter (modifies the original currentSize in main via reference)
     size++;
-
     std::cout << "*** Contact '" << newContact.name << "' added successfully. ***" << std::endl;
+}
+
+
+// [ ] Implement the new function void findContactByName(...)
+/**
+ * @brief Prompts the user for a name and searches for matching contacts.
+ *        Prints the details of any contact found.
+ *
+ * @param contacts The array of Contact objects (const as it's not modified).
+ * @param size The current number of contacts stored in the array.
+ */
+void findContactByName(const Contact contacts[], int size) {
+    std::cout << "\n--- Find Contact by Name ---" << std::endl;
+    if (size == 0) {
+        std::cout << "No contacts stored yet to search." << std::endl;
+        return;
+    }
+
+    std::string searchName;
+    std::cout << "Enter the name to search for: ";
+    std::getline(std::cin >> std::ws, searchName); // Read the name to search
+
+    bool found = false; // Flag to track if any match is found
+
+    std::cout << "\n--- Search Results ---" << std::endl;
+    for (int i = 0; i < size; ++i) {
+        // Simple case-sensitive string comparison
+        if (contacts[i].name == searchName) {
+            if (!found) { // Print header only once when the first match is found
+                 std::cout << std::left << std::setw(20) << "Name" << std::setw(15) << "Phone Number" << std::endl;
+                 std::cout << "-----------------------------------" << std::endl;
+            }
+            std::cout << std::left << std::setw(20) << contacts[i].name
+                      << std::setw(15) << contacts[i].phoneNumber << std::endl;
+            found = true; // Set flag to true as we found at least one match
+        }
+    }
+
+    if (!found) {
+        std::cout << "Contact '" << searchName << "' not found." << std::endl;
+    } else {
+         std::cout << "-----------------------------------" << std::endl; // Footer if found
+    }
+
 }
