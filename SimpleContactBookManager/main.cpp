@@ -4,38 +4,54 @@
 #include <limits>
 #include <iomanip> // Required for std::setw
 
-// Struct definition (same as before)
-struct Contact {
+// Base class with virtual function
+class Entry {
+public:
+    // Virtual destructor for proper cleanup in derived classes
+    virtual ~Entry() = default;
+
+    // Virtual method to print details
+    virtual void printDetails() const {
+        std::cout << "Base Entry (no details available)" << std::endl;
+    }
+};
+
+// Contact class now derives from Entry
+class Contact : public Entry {
+public:
     std::string name;
     std::string phoneNumber;
+
+    // Override the printDetails method
+    void printDetails() const override {
+        std::cout << std::left << std::setw(20) << name
+                  << std::setw(15) << phoneNumber << std::endl;
+    }
 };
 
 // --- Function Prototypes ---
-void displayContacts(const Contact contacts[], int size);
-void addContact(Contact contacts[], int& size, int maxSize);
-// [ ] Add a new function prototype for findContactByName
-void findContactByName(const Contact contacts[], int size); // New function prototype
+void displayContacts(const std::vector<Contact>& contacts);
+void addContact(std::vector<Contact>& contacts);
+void findContactByName(const std::vector<Contact>& contacts);
 
 int main() {
-    const int MAX_CONTACTS = 10;
-    Contact contacts[MAX_CONTACTS];
-    int currentSize = 0;
+    // Changed from fixed array to vector
+    std::vector<Contact> contacts;
     int choice;
 
     while (true) {
         std::cout << "\n--- Contact Book Menu ---" << std::endl;
         std::cout << "1. Add Contact" << std::endl;
         std::cout << "2. Display Contacts" << std::endl;
-        // [ ] Add a new option to your main menu loop
-        std::cout << "3. Find Contact by Name" << std::endl; // New option
-        std::cout << "4. Exit" << std::endl;                 // Renumbered Exit
+        std::cout << "3. Find Contact by Name" << std::endl;
+        std::cout << "4. Exit" << std::endl;
         std::cout << "-------------------------" << std::endl;
         std::cout << "Enter your choice: ";
 
         std::cin >> choice;
 
         if (std::cin.fail()) {
-            std::cout << "\n*** Invalid input. Please enter a number (1-4). ***" << std::endl; // Updated range
+            std::cout << "\n*** Invalid input. Please enter a number (1-4). ***" << std::endl;
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
@@ -45,20 +61,19 @@ int main() {
 
         switch (choice) {
             case 1:
-                addContact(contacts, currentSize, MAX_CONTACTS);
+                addContact(contacts);
                 break;
             case 2:
-                displayContacts(contacts, currentSize);
+                displayContacts(contacts);
                 break;
-            // [ ] Add a case to call the search function
-            case 3: // New case for search
-                findContactByName(contacts, currentSize);
+            case 3:
+                findContactByName(contacts);
                 break;
-            case 4: // Renumbered case for Exit
+            case 4:
                 std::cout << "\nExiting Contact Book. Goodbye!" << std::endl;
                 return 0;
             default:
-                std::cout << "\n*** Invalid choice. Please enter 1, 2, 3, or 4. ***" << std::endl; // Updated range
+                std::cout << "\n*** Invalid choice. Please enter 1, 2, 3, or 4. ***" << std::endl;
                 break;
         }
     }
@@ -66,51 +81,37 @@ int main() {
     return 0; // Should be unreachable
 }
 
-// displayContacts function (same as before)
-void displayContacts(const Contact contacts[], int size) {
-    std::cout << "\n--- Stored Contacts (" << size << "/" << 10 << ") ---" << std::endl;
-    if (size == 0) {
+// Updated displayContacts function to use vector and virtual function
+void displayContacts(const std::vector<Contact>& contacts) {
+    std::cout << "\n--- Stored Contacts (" << contacts.size() << ") ---" << std::endl;
+    if (contacts.empty()) {
         std::cout << "No contacts to display." << std::endl;
     } else {
         std::cout << std::left << std::setw(20) << "Name" << std::setw(15) << "Phone Number" << std::endl;
         std::cout << "-----------------------------------" << std::endl;
-        for (int i = 0; i < size; ++i) {
-            std::cout << std::left << std::setw(20) << contacts[i].name
-                      << std::setw(15) << contacts[i].phoneNumber << std::endl;
+        for (const auto& contact : contacts) {
+            contact.printDetails(); // Using the virtual function
         }
     }
     std::cout << "-----------------------------------" << std::endl;
 }
 
-// addContact function (same as before)
-void addContact(Contact contacts[], int& size, int maxSize) {
+// Updated addContact function to use vector
+void addContact(std::vector<Contact>& contacts) {
     std::cout << "\n--- Add New Contact ---" << std::endl;
-    if (size >= maxSize) {
-        std::cout << "*** Error: Contact book is full. Cannot add more contacts. ***" << std::endl;
-        return;
-    }
     Contact newContact;
     std::cout << "Enter contact name: ";
     std::getline(std::cin >> std::ws, newContact.name);
     std::cout << "Enter phone number: ";
     std::getline(std::cin >> std::ws, newContact.phoneNumber);
-    contacts[size] = newContact;
-    size++;
+    contacts.push_back(newContact);
     std::cout << "*** Contact '" << newContact.name << "' added successfully. ***" << std::endl;
 }
 
-
-// [ ] Implement the new function void findContactByName(...)
-/**
- * @brief Prompts the user for a name and searches for matching contacts.
- *        Prints the details of any contact found.
- *
- * @param contacts The array of Contact objects (const as it's not modified).
- * @param size The current number of contacts stored in the array.
- */
-void findContactByName(const Contact contacts[], int size) {
+// Updated findContactByName function to use vector and virtual function
+void findContactByName(const std::vector<Contact>& contacts) {
     std::cout << "\n--- Find Contact by Name ---" << std::endl;
-    if (size == 0) {
+    if (contacts.empty()) {
         std::cout << "No contacts stored yet to search." << std::endl;
         return;
     }
@@ -122,15 +123,14 @@ void findContactByName(const Contact contacts[], int size) {
     bool found = false; // Flag to track if any match is found
 
     std::cout << "\n--- Search Results ---" << std::endl;
-    for (int i = 0; i < size; ++i) {
+    for (const auto& contact : contacts) {
         // Simple case-sensitive string comparison
-        if (contacts[i].name == searchName) {
+        if (contact.name == searchName) {
             if (!found) { // Print header only once when the first match is found
                  std::cout << std::left << std::setw(20) << "Name" << std::setw(15) << "Phone Number" << std::endl;
                  std::cout << "-----------------------------------" << std::endl;
             }
-            std::cout << std::left << std::setw(20) << contacts[i].name
-                      << std::setw(15) << contacts[i].phoneNumber << std::endl;
+            contact.printDetails(); // Using the virtual function
             found = true; // Set flag to true as we found at least one match
         }
     }
@@ -138,7 +138,6 @@ void findContactByName(const Contact contacts[], int size) {
     if (!found) {
         std::cout << "Contact '" << searchName << "' not found." << std::endl;
     } else {
-         std::cout << "-----------------------------------" << std::endl; // Footer if found
+        std::cout << "-----------------------------------" << std::endl; // Footer if found
     }
-
 }
